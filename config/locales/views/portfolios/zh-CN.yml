@@ -7,6 +7,47 @@ zh-CN:
       title: 暂无可显示的投资账户
     sections:
       accounts: 账户
+      allocation: 配置
+    allocation:
+      breadcrumb: 配置明细
+      chart_label: 投资组合配置
+      columns:
+        amount: 金额
+        bucket: 分组
+        weight: 占比
+      empty:
+        description: 当投资账户持有证券或现金时，配置会显示在这里。
+        drilled_description: 这个分组没有可显示的持仓。
+        drilled_title: 这个分组是空的
+        title: 没有可配置的资产
+      group_by: 配置分组方式
+      groupings:
+        account: 账户
+        asset_class: 资产类别
+        asset_sub_class: 子类别
+        currency: 货币
+        region: 地区
+        sector: 行业
+      buckets:
+        alternative_investment: 另类投资
+        bond: 债券
+        cash: 现金
+        collectible: 收藏品
+        commodity: 大宗商品
+        cryptocurrency: 加密货币
+        equity: 股票
+        etf: ETF
+        fixed_income: 固定收益
+        liquidity: 流动性
+        loan: 贷款
+        mutual_fund: 共同基金
+        precious_metal: 贵金属
+        private_equity: 私募股权
+        real_estate: 房地产
+        stock: 股票
+        unclassified: 未分类
+      table_label: 配置
+      total: 合计
     show:
       section_aria: "%{title} 分区。按 Enter 或空格键抓取以重新排序，然后使用方向键移动。"
       sections_aria: 投资组合分区

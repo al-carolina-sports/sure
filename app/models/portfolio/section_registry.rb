@@ -17,19 +17,23 @@ class Portfolio::SectionRegistry
   # The built-in section keys, in declaration order. The preferences
   # endpoint accepts only these, so a saved order or collapsed set cannot
   # carry arbitrary strings into the user's preferences.
-  KEYS = %w[accounts].freeze
+  KEYS = %w[accounts allocation].freeze
 
   attr_reader :statement, :period, :as_of, :user, :extra_sections
 
   # `extra_sections` are appended after the built-ins, in the order given. It
   # is the seam that keeps this list open: a section can be added (or a test
   # can add one) without editing the built-in list.
-  def initialize(statement:, period:, as_of:, user:, extra_sections: [])
+  #
+  # `allocation_params` are the page's by / bucket / child query, the drill
+  # state of the allocation section. Anything else is ignored.
+  def initialize(statement:, period:, as_of:, user:, extra_sections: [], allocation_params: {})
     @statement = statement
     @period = period
     @as_of = as_of
     @user = user
     @extra_sections = extra_sections || []
+    @allocation_params = allocation_params || {}
   end
 
   # True when the viewer counts no investment account; the page shows its
@@ -71,8 +75,29 @@ class Portfolio::SectionRegistry
           locals: shared_locals.merge(accounts: accounts_for_cards),
           visible: accounts_for_cards.any?,
           collapsible: true
+        },
+        {
+          key: "allocation",
+          title: "portfolios.sections.allocation",
+          partial: "portfolios/allocation",
+          locals: shared_locals.merge(allocation: allocation_view),
+          visible: accounts_for_cards.any?,
+          collapsible: true
         }
       ]
+    end
+
+    def allocation_view
+      @allocation_view ||= Portfolio::AllocationView.new(
+        statement: statement,
+        grouping: allocation_param(:by),
+        bucket: allocation_param(:bucket),
+        child: allocation_param(:child)
+      )
+    end
+
+    def allocation_param(key)
+      @allocation_params[key] || @allocation_params[key.to_s]
     end
 
     # The accounts the cards show, in name order (id breaks ties, so

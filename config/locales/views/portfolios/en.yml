@@ -7,6 +7,47 @@ en:
       title: No investment accounts to show
     sections:
       accounts: Accounts
+      allocation: Allocation
+    allocation:
+      breadcrumb: Allocation drill-down
+      chart_label: Allocation of the portfolio
+      columns:
+        amount: Amount
+        bucket: Group
+        weight: Percent
+      empty:
+        description: When your investment accounts hold securities or cash, the split appears here.
+        drilled_description: This group has no holdings to show.
+        drilled_title: Nothing in this group
+        title: Nothing to allocate
+      group_by: Group allocation by
+      groupings:
+        account: Account
+        asset_class: Asset class
+        asset_sub_class: Sub-class
+        currency: Currency
+        region: Region
+        sector: Sector
+      buckets:
+        alternative_investment: Alternative investment
+        bond: Bond
+        cash: Cash
+        collectible: Collectible
+        commodity: Commodity
+        cryptocurrency: Cryptocurrency
+        equity: Equity
+        etf: ETF
+        fixed_income: Fixed income
+        liquidity: Liquidity
+        loan: Loan
+        mutual_fund: Mutual fund
+        precious_metal: Precious metal
+        private_equity: Private equity
+        real_estate: Real estate
+        stock: Stock
+        unclassified: Unclassified
+      table_label: Allocation
+      total: Total
     show:
       section_aria: "%{title} section. Press Enter or Space to grab for reordering, then use arrow keys to move."
       sections_aria: Portfolio sections
