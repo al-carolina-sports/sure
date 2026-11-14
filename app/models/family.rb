@@ -63,6 +63,7 @@ class Family < ApplicationRecord
   has_many :rule_groups, dependent: :destroy
   has_many :trades, through: :accounts
   has_many :holdings, through: :accounts
+  has_many :security_classifications, class_name: "FamilySecurityClassification", dependent: :destroy
 
   has_many :tags, dependent: :destroy
   has_many :categories, dependent: :destroy

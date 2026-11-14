@@ -82,6 +82,21 @@ class PortfoliosControllerTest < ActionDispatch::IntegrationTest
     assert_select "turbo-frame#sidebar_holdings"
     assert_select "[data-testid=right-sidebar-tabs] [data-id=holdings]"
     assert_select "[data-testid=right-sidebar-tabs] [data-id=chat]"
+    assert_select "a[href=?]", portfolio_path(scope: "net_worth", basis: "gross", bucket: "unclassified"), text: I18n.t("portfolios.allocation.classify")
+  end
+
+  test "an unclassified holding can be classified for this family" do
+    get portfolio_path(scope: "net_worth", bucket: "unclassified")
+
+    assert_response :success
+    assert_select "a[href=?][data-turbo-frame=modal]", edit_portfolio_classification_path(securities(:aapl))
+  end
+
+  test "an other-asset account can be classified from its slice" do
+    get portfolio_path(scope: "net_worth", bucket: "other")
+
+    assert_response :success
+    assert_select "a[href=?][data-turbo-frame=modal]", edit_portfolio_account_classification_path(accounts(:other_asset))
   end
 
   test "the investment grouping switcher changes which buckets the chart lists" do

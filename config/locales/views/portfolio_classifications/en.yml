@@ -1,0 +1,16 @@
+---
+en:
+  portfolio_classifications:
+    edit:
+      title: Classify %{ticker}
+      subtitle: A manual holding with no asset class, sub-class or recognised ticker stays unclassified until you choose a slice.
+      category: Category
+      sub_class: Sub-class
+      sub_class_blank: Leave unset
+      sector: Sector
+      region: Region
+      scope_note: Saved for your household only. A provider sync will not replace it, and it does not change the shared security for anyone else.
+      cancel: Cancel
+      save: Save
+    update:
+      saved: Classification saved

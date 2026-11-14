@@ -1,0 +1,20 @@
+<%= render DS::Dialog.new do |dialog| %>
+  <% dialog.with_header(title: t(".title", ticker: @security.ticker), subtitle: t(".subtitle")) %>
+  <% dialog.with_body do %>
+    <%= styled_form_with model: @classification, url: portfolio_classification_path(@security), method: :patch, class: "space-y-4", data: { turbo_frame: "_top" } do |form| %>
+      <%= form.select :category,
+            FamilySecurityClassification::CATEGORIES.map { |category| [ t("portfolios.allocation.categories.#{category}"), category ] },
+            { label: t(".category"), include_blank: false } %>
+      <%= form.select :asset_sub_class,
+            Security::ASSET_SUB_CLASSES.map { |sub| [ t("portfolios.allocation.buckets.#{sub}", default: sub.humanize), sub ] },
+            { label: t(".sub_class"), include_blank: t(".sub_class_blank") } %>
+      <%= form.text_field :sector, label: t(".sector") %>
+      <%= form.text_field :region, label: t(".region") %>
+      <p class="text-sm text-secondary"><%= t(".scope_note") %></p>
+      <div class="flex justify-end gap-2">
+        <%= render DS::Button.new(text: t(".cancel"), variant: :secondary, data: { action: "DS--dialog#close" }) %>
+        <%= render DS::Button.new(text: t(".save"), type: :submit) %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

@@ -12,7 +12,7 @@
 # it. Drill-down lists the gross pieces of a category. A mortgage is not
 # one of the properties.
 class Portfolio::NetWorthAllocation
-  CATEGORIES = %w[equity fixed_income cash crypto real_estate other unclassified].freeze
+  CATEGORIES = %w[equity fixed_income cash crypto real_estate private_equity other unclassified].freeze
   BASES = %w[gross net].freeze
 
   ASSET_CLASS_CATEGORY = {
@@ -21,7 +21,7 @@ class Portfolio::NetWorthAllocation
     "liquidity" => "cash",
     "real_estate" => "real_estate",
     "commodity" => "other",
-    "alternative_investment" => "other"
+    "alternative_investment" => "private_equity"
   }.freeze
 
   COLORS = {
@@ -30,6 +30,7 @@ class Portfolio::NetWorthAllocation
     "cash" => "var(--color-cyan-600)",
     "crypto" => "var(--color-orange-600)",
     "real_estate" => "var(--color-violet-600)",
+    "private_equity" => "var(--color-indigo-600)",
     "other" => "var(--color-yellow-600)",
     "unclassified" => "var(--color-gray-400)"
   }.freeze
@@ -45,9 +46,9 @@ class Portfolio::NetWorthAllocation
     var(--color-yellow-600)
   ].freeze
 
-  Slice = Data.define(:id, :name, :amount, :weight, :color, :link_params)
+  Slice = Data.define(:id, :name, :amount, :weight, :color, :link_params, :classify)
   Crumb = Data.define(:label, :params)
-  Line = Data.define(:category, :amount, :group_id, :group_name, :leaf_id, :leaf_name)
+  Line = Data.define(:category, :amount, :group_id, :group_name, :leaf_id, :leaf_name, :classify)
 
   attr_reader :basis, :bucket, :child
 
@@ -74,6 +75,11 @@ class Portfolio::NetWorthAllocation
 
   def drilled?
     bucket.present?
+  end
+
+  def unclassified_money
+    amount = category_totals.fetch("unclassified", 0).to_d
+    Money.new(amount.positive? ? amount : 0, currency)
   end
 
   def total_money
@@ -116,14 +122,15 @@ class Portfolio::NetWorthAllocation
 
       grouped
         .sort_by { |row| -row[1] }
-        .map do |id, amount, name, link|
+        .map do |id, amount, name, link, classify|
           Slice.new(
             id: id.to_s,
             name: name,
             amount: Money.new(amount, currency),
             weight: (amount / total * 100).round(2),
             color: COLORS[id.to_s] || PALETTE[id.to_s.each_byte.sum % PALETTE.size],
-            link_params: link
+            link_params: link,
+            classify: classify
           )
         end
     end
@@ -132,7 +139,7 @@ class Portfolio::NetWorthAllocation
       category_totals.filter_map do |category, amount|
         next unless amount.positive?
 
-        [ category, amount, category_label(category), scope_params.merge(bucket: category) ]
+        [ category, amount, category_label(category), scope_params.merge(bucket: category), nil ]
       end
     end
 
@@ -148,7 +155,8 @@ class Portfolio::NetWorthAllocation
       selected.group_by(&key).map do |id, group|
         name = nested_level? ? subgroup_label(id) : group.first.public_send(label)
         link = nested_level? ? scope_params.merge(bucket: bucket, child: id) : nil
-        [ id, group.sum(&:amount), name, link ]
+        classify = nested_level? ? nil : group.first.classify
+        [ id, group.sum(&:amount), name, link, classify ]
       end
     end
 
@@ -198,9 +206,9 @@ class Portfolio::NetWorthAllocation
       case account.accountable_type
       when "Investment" then security_lines(account, force_crypto: false)
       when "Crypto" then security_lines(account, force_crypto: true)
-      when "Depository" then balance_line(account, "cash")
-      when "Property" then balance_line(account, "real_estate")
-      else balance_line(account, "other")
+      when "Depository" then balance_line(account, account.allocation_category || "cash")
+      when "Property" then balance_line(account, account.allocation_category || "real_estate")
+      else balance_line(account, account.allocation_category || "other")
       end
     end
 
@@ -214,12 +222,15 @@ class Portfolio::NetWorthAllocation
         next unless amount.positive?
 
         held += amount
-        category = force_crypto ? "crypto" : category_for(holding.security)
+        category = category_for(holding.security, account:, force_crypto:)
         rows << security_line(holding, category, amount)
       end
 
       residual = convert(account.balance, account.currency) - held
-      rows << residual_line(account, force_crypto ? "crypto" : "cash", residual) if residual.positive?
+      if residual.positive?
+        residual_category = account.allocation_category.presence || (force_crypto ? "crypto" : "cash")
+        rows << residual_line(account, residual_category, residual)
+      end
       rows
     end
 
@@ -227,16 +238,19 @@ class Portfolio::NetWorthAllocation
       security = holding.security
       name = security.name.presence || security.ticker
       if %w[equity fixed_income].include?(category)
-        sub = security.asset_sub_class.presence || InvestmentStatement::UNCLASSIFIED
-        Line.new(category:, amount:, group_id: sub, group_name: sub, leaf_id: security.id.to_s, leaf_name: name)
+        sub = sub_class_for(security)
+        Line.new(category:, amount:, group_id: sub, group_name: sub, leaf_id: security.id.to_s, leaf_name: name, classify: [ "security", security.id ])
       else
-        Line.new(category:, amount:, group_id: security.id.to_s, group_name: name, leaf_id: security.id.to_s, leaf_name: name)
+        Line.new(category:, amount:, group_id: security.id.to_s, group_name: name, leaf_id: security.id.to_s, leaf_name: name, classify: [ "security", security.id ])
       end
     end
 
     def residual_line(account, category, amount)
       id = "#{category}-#{account.id}"
-      Line.new(category:, amount:, group_id: id, group_name: account.name, leaf_id: id, leaf_name: account.name)
+      # The residual is the unexplained balance, usually cash. Classifying
+      # it would retarget the whole account, so that control stays on the
+      # account itself.
+      Line.new(category:, amount:, group_id: id, group_name: account.name, leaf_id: id, leaf_name: account.name, classify: nil)
     end
 
     def balance_line(account, category)
@@ -244,14 +258,35 @@ class Portfolio::NetWorthAllocation
       return [] unless amount.positive?
 
       id = account.id.to_s
-      [ Line.new(category:, amount:, group_id: id, group_name: account.name, leaf_id: id, leaf_name: account.name) ]
+      [ Line.new(category:, amount:, group_id: id, group_name: account.name, leaf_id: id, leaf_name: account.name, classify: [ "account", account.id ]) ]
     end
 
-    def category_for(security)
+    # A security override wins, then the account's own category, then a
+    # security the provider already classified, then a ticker or name we
+    # can recognise. Anything left is unclassified.
+    def category_for(security, account: nil, force_crypto: false)
+      return overrides[security.id].category if overrides[security.id]
+      return account.allocation_category if account&.allocation_category.present?
+      return "crypto" if force_crypto
       return "cash" if security.cash?
       return "crypto" if security.crypto?
+      return "private_equity" if security.asset_sub_class == "private_equity"
 
-      ASSET_CLASS_CATEGORY[security.asset_class] || "unclassified"
+      mapped = ASSET_CLASS_CATEGORY[security.asset_class]
+      return mapped if mapped
+
+      Portfolio::SecurityClassification.infer(security) || "unclassified"
+    end
+
+    def sub_class_for(security)
+      overrides[security.id]&.asset_sub_class.presence ||
+        security.asset_sub_class.presence ||
+        Portfolio::SecurityClassification.inferred_sub_class(security) ||
+        InvestmentStatement::UNCLASSIFIED
+    end
+
+    def overrides
+      @overrides ||= FamilySecurityClassification.where(family_id: @family.id).index_by(&:security_id)
     end
 
     def holdings_by_account

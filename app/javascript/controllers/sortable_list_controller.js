@@ -388,6 +388,20 @@ export default class extends Controller {
     this.releaseKeyboardGrab().then(() => Turbo.visit(url));
   }
 
+  // A sidebar account link loads a frame instead of visiting, so
+  // turbo:before-visit never runs. While a row is still held, follow the
+  // account page after the order is saved.
+  saveBeforeNavigate(event) {
+    if (!this.keyboardGrabbedElement) return;
+
+    const link = event.target.closest("a[href]");
+    if (!link || !this.element.contains(link)) return;
+
+    event.preventDefault();
+    const url = link.dataset.accountUrl || link.href;
+    this.releaseKeyboardGrab().then(() => Turbo.visit(url));
+  }
+
   moveUp(section) {
     const previousSibling = section.previousElementSibling;
     if (previousSibling && this.itemTargets.includes(previousSibling)) {

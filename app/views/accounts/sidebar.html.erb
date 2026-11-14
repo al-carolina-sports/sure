@@ -8,6 +8,15 @@
         <% end %>
       </div>
       <div class="flex items-center gap-1 shrink-0">
+        <% if preview_features_enabled? %>
+          <%= render DS::Link.new(
+                text: t("accounts.sidebar_holdings.classify"),
+                href: edit_portfolio_account_classification_path(@account),
+                variant: :ghost,
+                size: :sm,
+                data: { turbo_frame: "modal" }
+              ) %>
+        <% end %>
         <%= render DS::Link.new(
               text: t("accounts.sidebar_holdings.open_account"),
               href: account_path(@account),

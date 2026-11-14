@@ -1,0 +1,13 @@
+---
+zh-CN:
+  portfolio_account_classifications:
+    edit:
+      title: 分类 %{name}
+      subtitle: 为整个账户设置类别，包括没有单独分类的持仓。
+      category: 类别
+      default: 使用默认
+      scope_note: 单只证券上的分类仍然优先。清空后，账户回到原来的类别。
+      cancel: 取消
+      save: 保存
+    update:
+      saved: 账户分类已保存

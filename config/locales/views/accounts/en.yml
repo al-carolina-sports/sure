@@ -7,6 +7,7 @@ en:
   accounts:
     sidebar_holdings:
       balance: Balance
+      classify: Classify
       close: Close holdings
       entry: Activity
       name: Name

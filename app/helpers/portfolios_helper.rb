@@ -25,6 +25,8 @@ module PortfoliosHelper
         amount: slice.amount.amount.to_f,
         color: slice.color,
         label: slice.name,
+        weight: slice.weight.to_f,
+        amount_label: format_money(slice.amount),
         href: (portfolio_allocation_path(**slice.link_params) if slice.link_params)
       }
     end

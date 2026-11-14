@@ -8,7 +8,7 @@ class ReplaceUrlBackTest < ApplicationSystemTestCase
   test "Back after a tab switch restores the account page as it was left" do
     account = accounts(:investment)
     visit account_path(account)
-    find("[role='tab']", text: "Holdings").click
+    find("[data-testid='account-details'] [role='tab']", text: "Holdings").click
     assert_current_path account_path(account, tab: "holdings")
 
     # Only the copy Turbo caches on leaving carries this mark. A refetch drops it.
@@ -19,7 +19,7 @@ class ReplaceUrlBackTest < ApplicationSystemTestCase
     page.go_back
 
     assert_selector "body[data-left]"
-    assert_selector "[role='tab'][aria-selected='true']", text: "Holdings"
+    assert_selector "[data-testid='account-details'] [role='tab'][aria-selected='true']", text: "Holdings"
     assert_current_path account_path(account, tab: "holdings")
   end
 

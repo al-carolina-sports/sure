@@ -508,6 +508,8 @@ Rails.application.routes.draw do
   # Family-wide investment hub, built on the Reports section framework.
   resource :portfolio, only: :show do
     patch :update_preferences
+    resources :classifications, only: %i[edit update], param: :security_id, controller: "portfolio_classifications"
+    resources :account_classifications, only: %i[edit update], param: :account_id, controller: "portfolio_account_classifications"
   end
 
   resources :budgets, only: %i[index show edit update], param: :month_year do
