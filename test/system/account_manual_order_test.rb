@@ -75,7 +75,7 @@ class AccountManualOrderTest < ApplicationSystemTestCase
       handle.send_keys(:enter)
       handle.send_keys(:up)
 
-      find("[data-sortable-list-target='item'][data-sortable-list-id='#{plaid.id}'] a[href='#{account_path(plaid)}']").click
+      find("[data-sortable-list-target='item'][data-sortable-list-id='#{plaid.id}'] a[data-account-url='#{account_path(plaid)}']").click
     end
 
     assert_current_path account_path(plaid)

@@ -193,9 +193,9 @@ end %>
     <% end %>
 
     <% unless intro_mode %>
-      <%# Right sidebar. Holdings is the default tab; chat stays one tab away
-          when the assistant is enabled. On a small screen the same panel is a
-          sheet, hidden until an account is chosen. %>
+      <%# Right sidebar. Chat is the tab that is open on arrival, so the
+          assistant is where it was. Choosing an account switches to Holdings.
+          On a small screen the same panel is a sheet, hidden until then. %>
       <%= tag.div class: class_names(
             "max-lg:hidden lg:block relative lg:h-full shrink-0 transition-all duration-300 border-divider bg-container",
             "max-lg:fixed max-lg:inset-x-3 max-lg:bottom-20 max-lg:z-30 max-lg:h-auto max-lg:max-h-128 max-lg:overflow-y-auto max-lg:rounded-xl max-lg:shadow-border-xs",
@@ -207,7 +207,7 @@ end %>
         <%= render "layouts/shared/sidebar_resize_handle", side: "right" %>
         <div class="flex flex-col h-full min-h-0 px-3 py-3">
           <% if assistant_enabled %>
-            <%= render DS::Tabs.new(active_tab: "holdings", testid: "right-sidebar-tabs") do |tabs| %>
+            <%= render DS::Tabs.new(active_tab: "chat", testid: "right-sidebar-tabs") do |tabs| %>
               <% tabs.with_nav do |nav| %>
                 <% nav.with_btn(id: "holdings", label: t("accounts.sidebar_holdings.tabs.holdings")) %>
                 <% nav.with_btn(id: "chat", label: t("accounts.sidebar_holdings.tabs.chat")) %>
