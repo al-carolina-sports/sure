@@ -2,7 +2,7 @@ class AccountsController < ApplicationController
   include StreamExtensions
   include FilterClearable
 
-  before_action :set_account, only: %i[show sparkline sync set_default remove_default clear_filter]
+  before_action :set_account, only: %i[show sparkline sidebar sync set_default remove_default clear_filter]
   before_action :set_manageable_account, only: %i[logo_options toggle_active toggle_exclude_from_reports destroy unlink confirm_unlink select_provider]
   before_action :ensure_linked_account, only: %i[confirm_unlink unlink]
   include Periodable
@@ -386,6 +386,15 @@ class AccountsController < ApplicationController
     if @available_providers.empty?
       redirect_to account_path(@account), alert: t("accounts.select_provider.no_providers")
     end
+  end
+
+  # Holdings for the right sidebar. Accounts without positions get their
+  # balance and a few recent entries instead.
+  def sidebar
+    @holdings = @account.current_holdings.includes(:security).to_a
+    Holding.preload_avg_costs(@holdings)
+    @entries = @account.entries.reverse_chronological.limit(5) if @holdings.empty?
+    render layout: false
   end
 
   private

@@ -40,6 +40,10 @@ class Portfolio::AllocationView
 
   attr_reader :grouping, :bucket, :child
 
+  def net_worth?
+    false
+  end
+
   def initialize(statement:, grouping: nil, bucket: nil, child: nil)
     @statement = statement
     requested = grouping.to_s.presence || "asset_class"
@@ -78,11 +82,11 @@ class Portfolio::AllocationView
   def crumbs
     return [] unless drilled?
 
-    root = Crumb.new(label: grouping_label, params: { by: grouping })
+    root = Crumb.new(label: grouping_label, params: scope_params.merge(by: grouping))
     if child.present?
       [
         root,
-        Crumb.new(label: bucket_label(bucket), params: { by: grouping, bucket: bucket }),
+        Crumb.new(label: bucket_label(bucket), params: scope_params.merge(by: grouping, bucket: bucket)),
         Crumb.new(label: bucket_label(child), params: nil)
       ]
     else
@@ -136,9 +140,9 @@ class Portfolio::AllocationView
     def link_params_for(segment)
       case level
       when :top
-        { by: grouping, bucket: segment.id } if %w[asset_class asset_sub_class].include?(grouping)
+        scope_params.merge(by: grouping, bucket: segment.id) if %w[asset_class asset_sub_class].include?(grouping)
       when :sub_classes
-        { by: grouping, bucket: bucket, child: segment.id }
+        scope_params.merge(by: grouping, bucket: bucket, child: segment.id)
       end
     end
 
@@ -163,6 +167,10 @@ class Portfolio::AllocationView
       return fallback unless id.match?(/\A[a-z0-9_]+\z/)
 
       I18n.t("portfolios.allocation.buckets.#{id}", default: fallback)
+    end
+
+    def scope_params
+      { scope: "investments" }
     end
 
     def color_for(id)

@@ -1,15 +1,39 @@
 <%# locals: (allocation:, statement:, period:, as_of:) %>
 
 <div id="portfolio-allocation" class="space-y-4">
-  <div class="overflow-x-auto">
-    <%= render DS::SegmentedControl.new(aria_label: t(".group_by")) do |control| %>
-      <% Portfolio::AllocationView::GROUPINGS.each do |grouping| %>
-        <% control.with_segment(
-             t(".groupings.#{grouping}"),
-             href: portfolio_allocation_path(by: grouping),
-             active: allocation.grouping == grouping
-           ) %>
+  <div class="flex flex-col gap-3">
+    <div class="overflow-x-auto">
+      <%= render DS::SegmentedControl.new(aria_label: t(".scope")) do |control| %>
+        <% control.with_segment(t(".scopes.net_worth"), href: portfolio_allocation_path(scope: "net_worth"), active: allocation.net_worth?) %>
+        <% control.with_segment(t(".scopes.investments"), href: portfolio_allocation_path(scope: "investments"), active: !allocation.net_worth?) %>
       <% end %>
+    </div>
+
+    <% if allocation.net_worth? %>
+      <div class="overflow-x-auto">
+        <%= render DS::SegmentedControl.new(aria_label: t(".basis")) do |control| %>
+          <% control.with_segment(t(".bases.gross"), href: portfolio_allocation_path(scope: "net_worth", basis: "gross"), active: allocation.basis == "gross") %>
+          <% control.with_segment(t(".bases.net"), href: portfolio_allocation_path(scope: "net_worth", basis: "net"), active: allocation.basis == "net") %>
+        <% end %>
+      </div>
+      <% if allocation.uncovered_debt.positive? %>
+        <p class="text-sm text-secondary"><%= t(".uncovered_debt", amount: format_money(allocation.uncovered_debt)) %></p>
+      <% end %>
+      <% if allocation.drilled? && allocation.basis == "net" %>
+        <p class="text-sm text-secondary"><%= t(".drill_is_gross") %></p>
+      <% end %>
+    <% else %>
+      <div class="overflow-x-auto">
+        <%= render DS::SegmentedControl.new(aria_label: t(".group_by")) do |control| %>
+          <% Portfolio::AllocationView::GROUPINGS.each do |grouping| %>
+            <% control.with_segment(
+                 t(".groupings.#{grouping}"),
+                 href: portfolio_allocation_path(scope: "investments", by: grouping),
+                 active: allocation.grouping == grouping
+               ) %>
+          <% end %>
+        <% end %>
+      </div>
     <% end %>
   </div>
 
@@ -35,8 +59,8 @@
   <% if allocation.empty? %>
     <%= render DS::EmptyState.new(
           icon: "pie-chart",
-          title: t(allocation.drilled? ? ".empty.drilled_title" : ".empty.title"),
-          description: t(allocation.drilled? ? ".empty.drilled_description" : ".empty.description")
+          title: t(allocation.drilled? ? ".empty.drilled_title" : (allocation.net_worth? ? ".empty.net_worth_title" : ".empty.title")),
+          description: t(allocation.drilled? ? ".empty.drilled_description" : (allocation.net_worth? ? ".empty.net_worth_description" : ".empty.description"))
         ) %>
   <% else %>
     <div
@@ -48,7 +72,7 @@
           data-allocation-donut-target="chart"
           class="absolute inset-0"
           role="img"
-          aria-label="<%= t(".chart_label") %>"></div>
+          aria-label="<%= t(allocation.net_worth? ? ".chart_label_net_worth" : ".chart_label") %>"></div>
         <div class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
           <p class="text-xs text-secondary"><%= t(".total") %></p>
           <p class="text-lg font-medium text-primary privacy-sensitive"><%= format_money(allocation.total_money) %></p>

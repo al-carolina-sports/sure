@@ -14,7 +14,7 @@ class Portfolio::SectionRegistryTest < ActiveSupport::TestCase
 
     assert_equal Portfolio::SectionRegistry::KEYS, sections.map { |s| s[:key] }
     assert_equal %w[portfolios/accounts portfolios/allocation], sections.map { |s| s[:partial] }
-    assert_instance_of Portfolio::AllocationView, sections.find { |s| s[:key] == "allocation" }[:locals][:allocation]
+    assert_instance_of Portfolio::NetWorthAllocation, sections.find { |s| s[:key] == "allocation" }[:locals][:allocation]
     assert sections.all? { |s| s[:collapsible] }
 
     # Every partial gets its locals passed in: none of them reaches for

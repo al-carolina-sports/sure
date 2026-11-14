@@ -5,6 +5,23 @@ en:
       destroy:
         success: "Entry deleted successfully."
   accounts:
+    sidebar_holdings:
+      balance: Balance
+      close: Close holdings
+      entry: Activity
+      name: Name
+      no_activity: No recent activity
+      not_applicable: "—"
+      open_account: Open
+      prompt: Choose an account to see its holdings.
+      quantity: "Qty %{quantity}"
+      recent: Recent activity
+      table_label: Holdings in %{account}
+      tabs:
+        chat: Chat
+        holdings: Holdings
+      value: Value
+      weight: Percent
     reconciliation_indicator:
       matched: All transactions reconciled
       needs_attention: Transactions need reconciliation

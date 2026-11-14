@@ -9,8 +9,27 @@ zh-CN:
       accounts: 账户
       allocation: 配置
     allocation:
+      basis: 资产或扣除负债
+      bases:
+        gross: 总资产
+        net: 扣除负债
       breadcrumb: 配置明细
+      categories:
+        cash: 现金
+        crypto: 加密货币
+        equity: 股票
+        fixed_income: 债券
+        other: 其他
+        real_estate: 房地产
+        unclassified: 未分类
       chart_label: 投资组合配置
+      chart_label_net_worth: 资产配置
+      drill_is_gross: 此明细尚未扣除负债。
+      scope: 图表范围
+      scopes:
+        investments: 投资
+        net_worth: 净资产
+      uncovered_debt: "%{amount} 的负债超过对应资产，因此未画入图表。"
       columns:
         amount: 金额
         bucket: 分组
@@ -19,6 +38,8 @@ zh-CN:
         description: 当投资账户持有证券或现金时，配置会显示在这里。
         drilled_description: 这个分组没有可显示的持仓。
         drilled_title: 这个分组是空的
+        net_worth_description: 计入财务的现金、投资、房产和加密货币会显示在这里。
+        net_worth_title: 没有可配置的资产
         title: 没有可配置的资产
       group_by: 配置分组方式
       groupings:

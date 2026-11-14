@@ -26,7 +26,7 @@ end %>
 <%= render "layouts/shared/htmldoc", sidebar_aware: true do %>
   <div
     class="flex flex-col lg:flex-row h-full bg-surface"
-    data-controller="app-layout privacy-mode sidebar-resize"
+    data-controller="app-layout privacy-mode sidebar-resize sidebar-holdings"
     data-app-layout-expanded-sidebar-class="<%= expanded_sidebar_class %>"
     data-app-layout-collapsed-sidebar-class="<%= collapsed_sidebar_class %>"
     data-app-layout-user-id-value="<%= Current.user.id %>">
@@ -178,9 +178,7 @@ end %>
               <%= icon("eye", size: "sm", class: "hidden", data: { privacy_mode_target: "iconOn" }) %>
             </button>
 
-            <% if assistant_enabled %>
-              <%= icon("panel-right", as_button: true, data: { action: "app-layout#toggleRightSidebar" }) %>
-            <% end %>
+            <%= icon("panel-right", as_button: true, data: { action: "app-layout#toggleRightSidebar", sidebar_holdings_toggle: true }) %>
           </div>
         </div>
       <% end %>
@@ -194,31 +192,38 @@ end %>
       <%= yield %>
     <% end %>
 
-    <% if assistant_enabled %>
-      <%# DESKTOP - Right sidebar %>
+    <% unless intro_mode %>
+      <%# Right sidebar. Holdings is the default tab; chat stays one tab away
+          when the assistant is enabled. On a small screen the same panel is a
+          sheet, hidden until an account is chosen. %>
       <%= tag.div class: class_names(
-            "hidden lg:block relative h-full shrink-0 transition-all duration-300 border-divider",
-            Current.user.show_ai_sidebar? ? [expanded_sidebar_class, "border-l"] : [collapsed_sidebar_class, "border-l-0"],
+            "max-lg:hidden lg:block relative lg:h-full shrink-0 transition-all duration-300 border-divider bg-container",
+            "max-lg:fixed max-lg:inset-x-3 max-lg:bottom-20 max-lg:z-30 max-lg:h-auto max-lg:max-h-128 max-lg:overflow-y-auto max-lg:rounded-xl max-lg:shadow-border-xs",
+            Current.user.show_ai_sidebar? ? [expanded_sidebar_class, "lg:border-l"] : [collapsed_sidebar_class, "lg:border-l-0"],
           ),
           style: "max-width: var(--right-sidebar-width, 400px)",
           inert: !Current.user.show_ai_sidebar?,
-          data: { app_layout_target: "rightSidebar", sidebar_resize_target: "rightSidebar" } do %>
+          data: { app_layout_target: "rightSidebar", sidebar_resize_target: "rightSidebar", sidebar_holdings_target: "panel" } do %>
         <%= render "layouts/shared/sidebar_resize_handle", side: "right" %>
-        <%= tag.div id: "chat-container", class: "relative h-full px-4 overflow-y-auto", data: { controller: "chat hotkey", chat_response_timeout_value: Chat.response_timeout_ms, turbo_permanent: true } do %>
-          <div class="flex flex-col h-full justify-between shrink-0">
-            <%= turbo_frame_tag chat_frame, src: chat_view_path(@chat), loading: "lazy", class: "h-full" do %>
-              <div class="flex justify-center items-center h-full">
-                <%= icon("loader-circle", class: "animate-spin") %>
-              </div>
+        <div class="flex flex-col h-full min-h-0 px-3 py-3">
+          <% if assistant_enabled %>
+            <%= render DS::Tabs.new(active_tab: "holdings", testid: "right-sidebar-tabs") do |tabs| %>
+              <% tabs.with_nav do |nav| %>
+                <% nav.with_btn(id: "holdings", label: t("accounts.sidebar_holdings.tabs.holdings")) %>
+                <% nav.with_btn(id: "chat", label: t("accounts.sidebar_holdings.tabs.chat")) %>
+              <% end %>
+              <% tabs.with_panel(tab_id: "holdings") do %>
+                <%= render "layouts/shared/sidebar_holdings_frame" %>
+              <% end %>
+              <% tabs.with_panel(tab_id: "chat") do %>
+                <%= render "layouts/shared/sidebar_chat" %>
+              <% end %>
             <% end %>
-          </div>
-
-          <% unless Current.user.ai_enabled? %>
-            <div class="absolute backdrop-blur-lg inset-0 h-full w-full flex flex-col justify-center items-center px-4">
-              <%= render "chats/ai_consent" %>
-            </div>
+          <% else %>
+            <h2 class="text-sm font-medium text-primary mb-3"><%= t("accounts.sidebar_holdings.tabs.holdings") %></h2>
+            <%= render "layouts/shared/sidebar_holdings_frame" %>
           <% end %>
-        <% end %>
+        </div>
       <% end %>
     <% end %>
 

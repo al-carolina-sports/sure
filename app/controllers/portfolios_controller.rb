@@ -16,7 +16,7 @@ class PortfoliosController < ApplicationController
       period: @period,
       as_of: @as_of,
       user: Current.user,
-      allocation_params: params.permit(:by, :bucket, :child).to_h.symbolize_keys
+      allocation_params: params.permit(:scope, :basis, :by, :bucket, :child).to_h.symbolize_keys
     )
     @empty = registry.empty?
     @sections = @empty ? [] : registry.sections

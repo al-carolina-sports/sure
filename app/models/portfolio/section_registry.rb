@@ -36,11 +36,11 @@ class Portfolio::SectionRegistry
     @allocation_params = allocation_params || {}
   end
 
-  # True when the viewer counts no investment account; the page shows its
-  # empty state instead of the sections. Reads the same loaded list as the
-  # cards, so the accounts are queried once per request.
+  # The page's empty state is for a family with nothing to allocate: no
+  # investment account and no other counted asset. A house or a checking
+  # account is enough to show the allocation section on its own.
   def empty?
-    accounts_for_cards.empty?
+    accounts_for_cards.empty? && gross_net_worth.empty?
   end
 
   def sections
@@ -81,18 +81,40 @@ class Portfolio::SectionRegistry
           title: "portfolios.sections.allocation",
           partial: "portfolios/allocation",
           locals: shared_locals.merge(allocation: allocation_view),
-          visible: accounts_for_cards.any?,
+          visible: accounts_for_cards.any? || !gross_net_worth.empty?,
           collapsible: true
         }
       ]
     end
 
+    # Whole net worth is the section's default. `scope=investments` keeps the
+    # investment groupings (asset class, sector, and the rest).
     def allocation_view
-      @allocation_view ||= Portfolio::AllocationView.new(
-        statement: statement,
-        grouping: allocation_param(:by),
-        bucket: allocation_param(:bucket),
-        child: allocation_param(:child)
+      @allocation_view ||= if allocation_param(:scope) == "investments"
+        Portfolio::AllocationView.new(
+          statement: statement,
+          grouping: allocation_param(:by),
+          bucket: allocation_param(:bucket),
+          child: allocation_param(:child)
+        )
+      elsif allocation_param(:bucket).blank? && allocation_param(:basis).blank?
+        gross_net_worth
+      else
+        net_worth_allocation
+      end
+    end
+
+    def gross_net_worth
+      @gross_net_worth ||= Portfolio::NetWorthAllocation.new(family: statement.family, user: user)
+    end
+
+    def net_worth_allocation
+      @net_worth_allocation ||= Portfolio::NetWorthAllocation.new(
+        family: statement.family,
+        user: user,
+        basis: allocation_param(:basis),
+        bucket: allocation_param(:scope) == "investments" ? nil : allocation_param(:bucket),
+        child: allocation_param(:scope) == "investments" ? nil : allocation_param(:child)
       )
     end
 

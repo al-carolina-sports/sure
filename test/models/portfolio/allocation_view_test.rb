@@ -15,7 +15,7 @@ class Portfolio::AllocationViewTest < ActiveSupport::TestCase
     assert_equal 2_150, slices[InvestmentStatement::UNCLASSIFIED].amount.amount
     assert_equal I18n.t("portfolios.allocation.buckets.liquidity"), slices["liquidity"].name
     assert_equal I18n.t("portfolios.allocation.buckets.unclassified"), slices[InvestmentStatement::UNCLASSIFIED].name
-    assert_equal({ by: "asset_class", bucket: "liquidity" }, slices["liquidity"].link_params)
+    assert_equal({ scope: "investments", by: "asset_class", bucket: "liquidity" }, slices["liquidity"].link_params)
     assert_in_delta 100, view.segments.sum(&:weight), 0.02
   end
 
@@ -55,7 +55,7 @@ class Portfolio::AllocationViewTest < ActiveSupport::TestCase
 
     assert children.drilled?
     assert_equal [ "etf" ], children.segments.map(&:id)
-    assert_equal({ by: "asset_class", bucket: "equity", child: "etf" }, children.segments.first.link_params)
+    assert_equal({ scope: "investments", by: "asset_class", bucket: "equity", child: "etf" }, children.segments.first.link_params)
     assert_equal [
       I18n.t("portfolios.allocation.groupings.asset_class"),
       I18n.t("portfolios.allocation.buckets.equity")

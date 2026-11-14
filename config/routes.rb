@@ -741,6 +741,7 @@ Rails.application.routes.draw do
       post :sync
       get :logo_options
       get :sparkline
+      get :sidebar
       patch :toggle_active
       patch :toggle_exclude_from_reports
       patch :set_default
