@@ -1,0 +1,16 @@
+---
+zh-CN:
+  portfolio_classifications:
+    edit:
+      title: 分类 %{ticker}
+      subtitle: 没有资产类别、子类或可识别代码的手动持仓会保持未分类，直到您选择一个类别。
+      category: 类别
+      sub_class: 子类
+      sub_class_blank: 不设置
+      sector: 行业
+      region: 地区
+      scope_note: 仅保存到您的家庭。数据同步不会覆盖它，也不会改变其他人共用的证券。
+      cancel: 取消
+      save: 保存
+    update:
+      saved: 分类已保存

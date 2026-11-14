@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_11_080000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_14_213000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -122,6 +122,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_080000) do
     t.string "status", default: "active"
     t.string "subtype"
     t.datetime "updated_at", null: false
+    t.string "allocation_category"
     t.index ["accountable_id", "accountable_type"], name: "index_accounts_on_accountable_id_and_accountable_type"
     t.index ["accountable_type"], name: "index_accounts_on_accountable_type"
     t.index ["currency"], name: "index_accounts_on_currency"
@@ -136,6 +137,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_080000) do
     t.index ["plaid_account_id"], name: "index_accounts_on_plaid_account_id"
     t.index ["simplefin_account_id"], name: "index_accounts_on_simplefin_account_id"
     t.index ["status"], name: "index_accounts_on_status"
+    t.check_constraint "allocation_category IS NULL OR (allocation_category::text = ANY (ARRAY['equity'::character varying, 'fixed_income'::character varying, 'cash'::character varying, 'crypto'::character varying, 'real_estate'::character varying, 'private_equity'::character varying, 'other'::character varying]::text[]))", name: "chk_accounts_allocation_category"
   end
 
   create_table "active_storage_attachments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -923,6 +925,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_080000) do
     t.index ["family_id", "merchant_id"], name: "idx_on_family_id_merchant_id_23e883e08f", unique: true
     t.index ["family_id"], name: "index_family_merchant_associations_on_family_id"
     t.index ["merchant_id"], name: "index_family_merchant_associations_on_merchant_id"
+  end
+
+  create_table "family_security_classifications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "family_id", null: false
+    t.uuid "security_id", null: false
+    t.string "category", null: false
+    t.string "asset_class"
+    t.string "asset_sub_class"
+    t.string "sector"
+    t.string "region"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["family_id", "security_id"], name: "index_family_security_classifications_on_family_and_security", unique: true
+    t.index ["family_id"], name: "index_family_security_classifications_on_family_id"
+    t.index ["security_id"], name: "index_family_security_classifications_on_security_id"
   end
 
   create_table "financekit_account_lineages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -3181,6 +3198,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_080000) do
   add_foreign_key "family_exports", "families"
   add_foreign_key "family_merchant_associations", "families"
   add_foreign_key "family_merchant_associations", "merchants"
+  add_foreign_key "family_security_classifications", "families"
+  add_foreign_key "family_security_classifications", "securities"
   add_foreign_key "financekit_account_lineages", "accounts", on_delete: :nullify
   add_foreign_key "financekit_account_lineages", "families"
   add_foreign_key "financekit_accounts", "financekit_account_lineages"

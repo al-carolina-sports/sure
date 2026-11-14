@@ -1,0 +1,13 @@
+---
+en:
+  portfolio_account_classifications:
+    edit:
+      title: Classify %{name}
+      subtitle: Sets the slice for this whole account, including holdings that have no classification of their own.
+      category: Category
+      default: Use the default
+      scope_note: A classification saved on one security still wins for that holding. Clearing this returns the account to its usual slice.
+      cancel: Cancel
+      save: Save
+    update:
+      saved: Account classification saved

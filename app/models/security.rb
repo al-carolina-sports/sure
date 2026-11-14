@@ -88,6 +88,7 @@ class Security < ApplicationRecord
   before_save :reset_first_provider_price_on_if_provider_changed
 
   has_many :trades, dependent: :nullify, class_name: "Trade"
+  has_many :family_security_classifications, dependent: :destroy
   has_many :prices, dependent: :destroy
   has_many :splits, dependent: :destroy
 

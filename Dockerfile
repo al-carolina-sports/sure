@@ -38,6 +38,13 @@ RUN bundle install \
 # Copy application code
 COPY . .
 
+# Official images get .sure-version from the workflow before this build.
+# A custom image has no such file, so pass --build-arg SURE_VERSION=YYYY.M.D
+# and the runtime stamp (and backups that read it) use that instead of the
+# stock image's version. An empty arg leaves a file the context already had.
+ARG SURE_VERSION
+RUN if [ -n "$SURE_VERSION" ]; then printf '%s\n' "$SURE_VERSION" > /rails/.sure-version; fi
+
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile -j 0 app/ lib/
 

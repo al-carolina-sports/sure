@@ -9,7 +9,10 @@ class Account < ApplicationRecord
   after_destroy_commit :move_account_statements_to_inbox
 
   validates :name, :balance, :currency, presence: true
+  validates :allocation_category, inclusion: { in: FamilySecurityClassification::CATEGORIES }, allow_nil: true
   validate :owner_belongs_to_family, if: -> { owner_id.present? && family_id.present? }
+
+  normalizes :allocation_category, with: ->(value) { value.presence }
 
   belongs_to :family
   belongs_to :owner, class_name: "User", optional: true

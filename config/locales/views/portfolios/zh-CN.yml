@@ -20,6 +20,7 @@ zh-CN:
         equity: 股票
         fixed_income: 债券
         other: 其他
+        private_equity: 私募股权
         real_estate: 房地产
         unclassified: 未分类
       chart_label: 投资组合配置
@@ -30,6 +31,8 @@ zh-CN:
         investments: 投资
         net_worth: 净资产
       uncovered_debt: "%{amount} 的负债超过对应资产，因此未画入图表。"
+      unclassified_banner: "%{amount} 未分类"
+      classify: 分类
       columns:
         amount: 金额
         bucket: 分组

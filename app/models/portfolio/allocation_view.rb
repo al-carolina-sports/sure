@@ -35,7 +35,7 @@ class Portfolio::AllocationView
     "unclassified" => "var(--color-gray-400)"
   }.freeze
 
-  Slice = Data.define(:id, :name, :amount, :weight, :color, :link_params)
+  Slice = Data.define(:id, :name, :amount, :weight, :color, :link_params, :classify)
   Crumb = Data.define(:label, :params)
 
   attr_reader :grouping, :bucket, :child
@@ -131,7 +131,8 @@ class Portfolio::AllocationView
         amount: segment.amount,
         weight: segment.weight,
         color: color_for(segment.id),
-        link_params: link_params_for(segment)
+        link_params: link_params_for(segment),
+        classify: nil
       )
     end
 

@@ -1,0 +1,16 @@
+---
+de:
+  portfolio_classifications:
+    edit:
+      title: "%{ticker} klassifizieren"
+      subtitle: Eine manuelle Position ohne Anlageklasse, Unterklasse oder bekanntes Kürzel bleibt unklassifiziert, bis Sie eine Kategorie wählen.
+      category: Kategorie
+      sub_class: Unterklasse
+      sub_class_blank: Nicht festlegen
+      sector: Sektor
+      region: Region
+      scope_note: Gilt nur für Ihren Haushalt. Ein Provider-Sync ersetzt die Wahl nicht und ändert das gemeinsame Wertpapier für niemanden sonst.
+      cancel: Abbrechen
+      save: Speichern
+    update:
+      saved: Klassifizierung gespeichert

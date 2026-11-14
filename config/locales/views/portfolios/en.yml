@@ -20,6 +20,7 @@ en:
         equity: Equity
         fixed_income: Bonds
         other: Other
+        private_equity: Private equity
         real_estate: Real estate
         unclassified: Unclassified
       chart_label: Allocation of the portfolio
@@ -30,6 +31,8 @@ en:
         investments: Investments
         net_worth: Net worth
       uncovered_debt: "%{amount} of debt is more than the asset it sits against, so it is not drawn."
+      unclassified_banner: "%{amount} unclassified"
+      classify: Classify
       columns:
         amount: Amount
         bucket: Group

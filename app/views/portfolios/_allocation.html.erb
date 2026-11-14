@@ -22,6 +22,14 @@
       <% if allocation.drilled? && allocation.basis == "net" %>
         <p class="text-sm text-secondary"><%= t(".drill_is_gross") %></p>
       <% end %>
+      <% if allocation.bucket != "unclassified" && allocation.unclassified_money.positive? %>
+        <%= render DS::Alert.new(variant: :warning, title: t(".unclassified_banner", amount: format_money(allocation.unclassified_money))) do %>
+          <%= render DS::Link.new(
+                text: t(".classify"),
+                href: portfolio_allocation_path(scope: "net_worth", basis: allocation.basis, bucket: "unclassified")
+              ) %>
+        <% end %>
+      <% end %>
     <% else %>
       <div class="overflow-x-auto">
         <%= render DS::SegmentedControl.new(aria_label: t(".group_by")) do |control| %>
@@ -67,7 +75,7 @@
       class="flex flex-col items-center gap-6 @3xl:flex-row @3xl:items-start"
       data-controller="allocation-donut"
       data-allocation-donut-segments-value="<%= portfolio_allocation_chart_segments(allocation).to_json %>">
-      <div class="relative h-64 w-64 shrink-0">
+      <div class="relative mx-auto h-64 w-64 sm:h-72 sm:w-full sm:max-w-3xl shrink-0">
         <div
           data-allocation-donut-target="chart"
           class="absolute inset-0"
@@ -97,6 +105,13 @@
                       data: { clickable_row_target: "link" } %>
               <% else %>
                 <span class="truncate font-medium text-primary"><%= slice.name %></span>
+              <% end %>
+              <% if slice.classify %>
+                <% kind, id = slice.classify %>
+                <%= link_to t(".classify"),
+                      kind == "account" ? edit_portfolio_account_classification_path(id) : edit_portfolio_classification_path(id),
+                      class: "shrink-0 text-xs text-link underline",
+                      data: { turbo_frame: "modal" } %>
               <% end %>
             </div>
           <% end %>

@@ -1,0 +1,13 @@
+---
+de:
+  portfolio_account_classifications:
+    edit:
+      title: "%{name} klassifizieren"
+      subtitle: Legt die Kategorie für das ganze Konto fest, einschließlich Positionen ohne eigene Klassifizierung.
+      category: Kategorie
+      default: Standard verwenden
+      scope_note: Eine Klassifizierung an einem einzelnen Wertpapier gilt weiterhin für diese Position. Leeren setzt das Konto auf die übliche Kategorie zurück.
+      cancel: Abbrechen
+      save: Speichern
+    update:
+      saved: Kontoklassifizierung gespeichert
