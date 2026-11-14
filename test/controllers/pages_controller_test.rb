@@ -21,7 +21,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#netWorthChart[data-time-series-chart-selectable-value='true'][draggable='false']"
   end
 
-  test "dashboard has no chat sidebar or toggle when the assistant type is mcp_only" do
+  test "dashboard keeps the holdings sidebar but drops chat when the assistant type is mcp_only" do
     get root_path
     assert_select "#chat-container", count: 1
     assert_select "[data-action='app-layout#toggleRightSidebar']", count: 1
@@ -31,8 +31,9 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :ok
     assert_select "#chat-container", count: 0
-    assert_select "[data-action='app-layout#toggleRightSidebar']", count: 0
     assert_select "a[href='#{chats_path}']", count: 0
+    assert_select "turbo-frame#sidebar_holdings"
+    assert_select "[data-action='app-layout#toggleRightSidebar']", count: 1
   end
 
   test "inactive user's existing session is revoked" do

@@ -1,4 +1,48 @@
 module AccountsHelper
+  SidebarHoldingRow = Data.define(:name, :quantity, :amount, :weight, :gain, :gain_class)
+
+  # Rows for the right-sidebar holdings list. Cash sits beside the positions
+  # when the account keeps a cash balance. A holding priced in another
+  # currency has no percent of the account, since the two amounts cannot be
+  # divided.
+  def sidebar_holding_rows(account, holdings)
+    balance = account.balance.is_a?(Money) ? account.balance.amount.to_d : account.balance.to_d
+    rows = []
+
+    if account.cash_balance.to_d.positive?
+      cash = account.cash_balance_money
+      rows << SidebarHoldingRow.new(
+        name: t("holdings.cash.brokerage_cash"),
+        quantity: nil,
+        amount: cash,
+        weight: share_of(cash, account.currency, balance),
+        gain: nil,
+        gain_class: nil
+      )
+    end
+
+    holdings.each do |holding|
+      trend = holding.trend
+      rows << SidebarHoldingRow.new(
+        name: holding.name,
+        quantity: holding.qty,
+        amount: holding.amount_money,
+        weight: share_of(holding.amount_money, account.currency, balance),
+        gain: trend&.value,
+        gain_class: trend && (trend.direction.down? ? "text-destructive" : "text-success")
+      )
+    end
+
+    rows
+  end
+
+  def share_of(money, currency, balance)
+    return nil if balance.zero? || money.nil?
+    return nil unless money.currency.iso_code == currency.to_s
+
+    money.amount / balance * 100
+  end
+
   def summary_card(title:, &block)
     content = capture(&block)
     render "accounts/summary_card", title: title, content: content
@@ -70,7 +114,7 @@ module AccountsHelper
       .pick(Arel.sql("count(*)"), Arel.sql("max(account_providers.updated_at)"))
 
     [
-      family.build_cache_key("account_sidebar_tabs_v7", invalidate_on_data_updates: true),
+      family.build_cache_key("account_sidebar_tabs_v8", invalidate_on_data_updates: true),
       family.manual_reconciliation?,
       Current.user&.id,
       shares_version,

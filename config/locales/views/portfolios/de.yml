@@ -7,6 +7,68 @@ de:
       title: Keine Anlagekonten zum Anzeigen
     sections:
       accounts: Konten
+      allocation: Aufteilung
+    allocation:
+      basis: Vermögen oder nach Schulden
+      bases:
+        gross: Bruttovermögen
+        net: Nach Schulden
+      breadcrumb: Aufteilung
+      categories:
+        cash: Cash
+        crypto: Krypto
+        equity: Aktien
+        fixed_income: Anleihen
+        other: Sonstiges
+        real_estate: Immobilien
+        unclassified: Nicht klassifiziert
+      chart_label: Aufteilung des Portfolios
+      chart_label_net_worth: Aufteilung der Vermögenswerte
+      drill_is_gross: Diese Aufschlüsselung gilt vor Abzug der Schulden.
+      scope: Was das Diagramm zeigt
+      scopes:
+        investments: Anlagen
+        net_worth: Vermögen
+      uncovered_debt: "%{amount} Schulden übersteigen den zugehörigen Vermögenswert und werden nicht gezeichnet."
+      columns:
+        amount: Betrag
+        bucket: Gruppe
+        weight: Anteil
+      empty:
+        description: Sobald Anlagekonten Wertpapiere oder Guthaben halten, erscheint die Aufteilung hier.
+        drilled_description: Diese Gruppe enthält keine Positionen.
+        drilled_title: Nichts in dieser Gruppe
+        net_worth_description: Bargeld, Anlagen, Immobilien und Krypto, die du in deine Finanzen einbeziehst, erscheinen hier.
+        net_worth_title: Keine Vermögenswerte aufzuteilen
+        title: Nichts aufzuteilen
+      group_by: Aufteilung gruppieren nach
+      groupings:
+        account: Konto
+        asset_class: Anlageklasse
+        asset_sub_class: Unterklasse
+        currency: Währung
+        region: Region
+        sector: Sektor
+      buckets:
+        alternative_investment: Alternative Anlage
+        bond: Anleihe
+        cash: Cash
+        collectible: Sammlerstück
+        commodity: Rohstoff
+        cryptocurrency: Kryptowährung
+        equity: Aktien
+        etf: ETF
+        fixed_income: Festverzinsliche
+        liquidity: Liquidität
+        loan: Darlehen
+        mutual_fund: Fonds
+        precious_metal: Edelmetall
+        private_equity: Private Equity
+        real_estate: Immobilien
+        stock: Aktie
+        unclassified: Nicht klassifiziert
+      table_label: Aufteilung
+      total: Gesamt
     show:
       section_aria: "Abschnitt %{title}. Drücke Enter oder Leertaste, um ihn zum Umsortieren zu greifen, dann bewege ihn mit den Pfeiltasten."
       sections_aria: Portfolio-Abschnitte

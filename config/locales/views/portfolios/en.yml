@@ -7,6 +7,68 @@ en:
       title: No investment accounts to show
     sections:
       accounts: Accounts
+      allocation: Allocation
+    allocation:
+      basis: Assets or net of debts
+      bases:
+        gross: Gross assets
+        net: Net of debts
+      breadcrumb: Allocation drill-down
+      categories:
+        cash: Cash
+        crypto: Crypto
+        equity: Equity
+        fixed_income: Bonds
+        other: Other
+        real_estate: Real estate
+        unclassified: Unclassified
+      chart_label: Allocation of the portfolio
+      chart_label_net_worth: Allocation of assets
+      drill_is_gross: This breakdown is before debts are subtracted.
+      scope: What the chart covers
+      scopes:
+        investments: Investments
+        net_worth: Net worth
+      uncovered_debt: "%{amount} of debt is more than the asset it sits against, so it is not drawn."
+      columns:
+        amount: Amount
+        bucket: Group
+        weight: Percent
+      empty:
+        description: When your investment accounts hold securities or cash, the split appears here.
+        drilled_description: This group has no holdings to show.
+        drilled_title: Nothing in this group
+        net_worth_description: Cash, investments, property and crypto you include in your finances appear here.
+        net_worth_title: No assets to allocate
+        title: Nothing to allocate
+      group_by: Group allocation by
+      groupings:
+        account: Account
+        asset_class: Asset class
+        asset_sub_class: Sub-class
+        currency: Currency
+        region: Region
+        sector: Sector
+      buckets:
+        alternative_investment: Alternative investment
+        bond: Bond
+        cash: Cash
+        collectible: Collectible
+        commodity: Commodity
+        cryptocurrency: Cryptocurrency
+        equity: Equity
+        etf: ETF
+        fixed_income: Fixed income
+        liquidity: Liquidity
+        loan: Loan
+        mutual_fund: Mutual fund
+        precious_metal: Precious metal
+        private_equity: Private equity
+        real_estate: Real estate
+        stock: Stock
+        unclassified: Unclassified
+      table_label: Allocation
+      total: Total
     show:
       section_aria: "%{title} section. Press Enter or Space to grab for reordering, then use arrow keys to move."
       sections_aria: Portfolio sections

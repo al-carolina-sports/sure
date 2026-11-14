@@ -48,7 +48,7 @@ class PortfoliosControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: I18n.t("portfolios.show.title")
-    assert_equal %w[accounts], css_select("[data-section-key]").map { |node| node["data-section-key"] }
+    assert_equal %w[accounts allocation], css_select("[data-section-key]").map { |node| node["data-section-key"] }
     assert_select "header + div[role=list]"
   end
 
@@ -68,6 +68,74 @@ class PortfoliosControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "renders net worth allocation across cash, property, crypto and holdings" do
+    get portfolio_path
+
+    assert_response :success
+    assert_select "[data-section-key=allocation] h2", text: I18n.t("portfolios.sections.allocation")
+    assert_select "#portfolio-allocation [data-controller=allocation-donut]"
+    assert_match I18n.t("portfolios.allocation.categories.cash"), response.body
+    assert_match I18n.t("portfolios.allocation.categories.real_estate"), response.body
+    assert_match I18n.t("portfolios.allocation.categories.crypto"), response.body
+    assert_match I18n.t("portfolios.allocation.categories.unclassified"), response.body
+    assert_select "a[href=?]", portfolio_path(scope: "net_worth", basis: "gross", bucket: "real_estate")
+    assert_select "turbo-frame#sidebar_holdings"
+    assert_select "[data-testid=right-sidebar-tabs] [data-id=holdings]"
+    assert_select "[data-testid=right-sidebar-tabs] [data-id=chat]"
+  end
+
+  test "the investment grouping switcher changes which buckets the chart lists" do
+    get portfolio_path(scope: "investments", by: "asset_sub_class")
+
+    assert_response :success
+    assert_match I18n.t("portfolios.allocation.buckets.cash"), response.body
+    assert_select "a[aria-current=true][href=?]", portfolio_path(scope: "investments", by: "asset_sub_class")
+    assert_select "a[href=?]", portfolio_path(scope: "investments", by: "sector")
+  end
+
+  test "an unknown investment grouping falls back to asset class" do
+    get portfolio_path(scope: "investments", by: "not_a_grouping")
+
+    assert_response :success
+    assert_match I18n.t("portfolios.allocation.buckets.liquidity"), response.body
+    assert_select "a[aria-current=true][href=?]", portfolio_path(scope: "investments", by: "asset_class")
+  end
+
+  test "clicking an investment slice drills into its children and then its holdings" do
+    security = Security.create!(
+      ticker: "T#{SecureRandom.hex(4)}", name: "Wide Market", exchange_operating_mic: "XNAS",
+      offline: true, asset_class: "equity", asset_sub_class: "etf"
+    )
+    Holding.create!(account: accounts(:investment), security: security, date: Date.current, qty: 1, price: 500, amount: 500, currency: "USD")
+
+    get portfolio_path(scope: "investments", by: "asset_class", bucket: "equity")
+
+    assert_response :success
+    assert_match I18n.t("portfolios.allocation.buckets.etf"), response.body
+    assert_select "a[href=?]", portfolio_path(scope: "investments", by: "asset_class", bucket: "equity", child: "etf")
+
+    get portfolio_path(scope: "investments", by: "asset_class", bucket: "equity", child: "etf")
+
+    assert_response :success
+    assert_match "Wide Market", response.body
+    assert_select "a", text: "Wide Market", count: 0
+  end
+
+  test "investments with nothing allocated show an empty state, while other assets stay on the net worth chart" do
+    Holding.where(account: @family.accounts).delete_all
+    @family.accounts.where(accountable_type: %w[Investment Crypto]).update_all(balance: 0, cash_balance: 0)
+
+    get portfolio_path(scope: "investments")
+
+    assert_response :success
+    assert_match I18n.t("portfolios.allocation.empty.title"), response.body
+
+    get portfolio_path
+
+    assert_match I18n.t("portfolios.allocation.categories.real_estate"), response.body
+    assert_match I18n.t("portfolios.allocation.categories.cash"), response.body
+  end
+
   test "shows an empty state with an add-account link when the family has no investment accounts" do
     user = users(:empty)
     enable_preview(user)
@@ -80,6 +148,15 @@ class PortfoliosControllerTest < ActionDispatch::IntegrationTest
     assert_match I18n.t("portfolios.empty_state.title"), response.body
     assert_select "a[href=?]", new_account_path
     assert_select "[data-section-key]", count: 0
+  end
+
+  test "allocation is a section the preferences endpoint will store" do
+    patch update_preferences_portfolio_path,
+      params: { preferences: { portfolio_section_order: %w[allocation accounts] } },
+      as: :json
+
+    assert_response :ok
+    assert_equal %w[allocation accounts], @user.reload.preferences["portfolio_section_order"]
   end
 
   test "saves the section order and collapsed set under the portfolio namespace only" do
@@ -241,17 +318,18 @@ class PortfoliosControllerTest < ActionDispatch::IntegrationTest
     assert_equal one, three, "loading the linked accounts' providers grew with the number of cards"
   end
 
-  test "the investment accounts are queried once per page" do
+  test "the investment accounts are read once for the cards and once for allocation" do
     queries = capture_sql_queries { get portfolio_path }
 
     assert_response :success
     assert_select "#portfolio-accounts a", minimum: 1
     # The cards select `accounts.*`; an `any?`/`empty?` check selects `1 AS one`.
-    # The layout's sidebar reads accounts with its own select list.
+    # Allocation reads the same scope again, without the card ordering. The
+    # layout's sidebar reads accounts with its own select list.
     matching = queries.select do |sql|
       sql.match?(/\ASELECT (DISTINCT )?("accounts"\.\*|1 AS one) FROM "accounts"/) && sql.include?(%("accounts"."exclude_from_reports"))
     end
-    assert_equal 1, matching.size, matching.join("\n")
+    assert_equal 2, matching.size, matching.join("\n")
   end
 
   # Without an id tiebreaker Postgres may return same-named accounts in any

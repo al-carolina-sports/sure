@@ -58,12 +58,17 @@
             }
           ) %>
         <% end %>
-        <%= link_to account_path(account),
+        <%= link_to sidebar_account_path(account),
                   class: class_names(
                     "block flex items-center gap-2 px-3 py-2 rounded-lg min-w-0 grow",
                     page_active?(account_path(account)) ? "bg-container" : "hover:bg-surface-hover"
                   ),
-                  data: page_active?(account_path(account)) ? { active_account: true } : {},
+                  data: {
+                    turbo_frame: "sidebar_holdings",
+                    action: "click->sidebar-holdings#open",
+                    sidebar_holdings_account_id: account.id,
+                    active_account: (true if page_active?(account_path(account)))
+                  },
                   title: account.name do %>
           <%= render "accounts/logo", account: account, size: "sm", color: account_group.color, reconciliation_indicator: reconciliation_indicators[account.id] %>
 

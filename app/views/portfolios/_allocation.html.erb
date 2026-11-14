@@ -1,0 +1,113 @@
+<%# locals: (allocation:, statement:, period:, as_of:) %>
+
+<div id="portfolio-allocation" class="space-y-4">
+  <div class="flex flex-col gap-3">
+    <div class="overflow-x-auto">
+      <%= render DS::SegmentedControl.new(aria_label: t(".scope")) do |control| %>
+        <% control.with_segment(t(".scopes.net_worth"), href: portfolio_allocation_path(scope: "net_worth"), active: allocation.net_worth?) %>
+        <% control.with_segment(t(".scopes.investments"), href: portfolio_allocation_path(scope: "investments"), active: !allocation.net_worth?) %>
+      <% end %>
+    </div>
+
+    <% if allocation.net_worth? %>
+      <div class="overflow-x-auto">
+        <%= render DS::SegmentedControl.new(aria_label: t(".basis")) do |control| %>
+          <% control.with_segment(t(".bases.gross"), href: portfolio_allocation_path(scope: "net_worth", basis: "gross"), active: allocation.basis == "gross") %>
+          <% control.with_segment(t(".bases.net"), href: portfolio_allocation_path(scope: "net_worth", basis: "net"), active: allocation.basis == "net") %>
+        <% end %>
+      </div>
+      <% if allocation.uncovered_debt.positive? %>
+        <p class="text-sm text-secondary"><%= t(".uncovered_debt", amount: format_money(allocation.uncovered_debt)) %></p>
+      <% end %>
+      <% if allocation.drilled? && allocation.basis == "net" %>
+        <p class="text-sm text-secondary"><%= t(".drill_is_gross") %></p>
+      <% end %>
+    <% else %>
+      <div class="overflow-x-auto">
+        <%= render DS::SegmentedControl.new(aria_label: t(".group_by")) do |control| %>
+          <% Portfolio::AllocationView::GROUPINGS.each do |grouping| %>
+            <% control.with_segment(
+                 t(".groupings.#{grouping}"),
+                 href: portfolio_allocation_path(scope: "investments", by: grouping),
+                 active: allocation.grouping == grouping
+               ) %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if allocation.drilled? %>
+    <nav aria-label="<%= t(".breadcrumb") %>">
+      <ol class="flex flex-wrap items-center gap-1 text-sm">
+        <% allocation.crumbs.each_with_index do |crumb, index| %>
+          <li class="flex items-center gap-1">
+            <% if index.positive? %>
+              <%= icon "chevron-right", size: "sm", class: "text-secondary" %>
+            <% end %>
+            <% if crumb.params %>
+              <%= link_to crumb.label, portfolio_allocation_path(**crumb.params), class: "text-secondary hover:text-primary focus-ring rounded-sm" %>
+            <% else %>
+              <span class="font-medium text-primary"><%= crumb.label %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ol>
+    </nav>
+  <% end %>
+
+  <% if allocation.empty? %>
+    <%= render DS::EmptyState.new(
+          icon: "pie-chart",
+          title: t(allocation.drilled? ? ".empty.drilled_title" : (allocation.net_worth? ? ".empty.net_worth_title" : ".empty.title")),
+          description: t(allocation.drilled? ? ".empty.drilled_description" : (allocation.net_worth? ? ".empty.net_worth_description" : ".empty.description"))
+        ) %>
+  <% else %>
+    <div
+      class="flex flex-col items-center gap-6 @3xl:flex-row @3xl:items-start"
+      data-controller="allocation-donut"
+      data-allocation-donut-segments-value="<%= portfolio_allocation_chart_segments(allocation).to_json %>">
+      <div class="relative h-64 w-64 shrink-0">
+        <div
+          data-allocation-donut-target="chart"
+          class="absolute inset-0"
+          role="img"
+          aria-label="<%= t(allocation.net_worth? ? ".chart_label_net_worth" : ".chart_label") %>"></div>
+        <div class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
+          <p class="text-xs text-secondary"><%= t(".total") %></p>
+          <p class="text-lg font-medium text-primary privacy-sensitive"><%= format_money(allocation.total_money) %></p>
+        </div>
+      </div>
+
+      <div class="w-full min-w-0 flex-1">
+        <%= render DS::Table.new(
+              rows: allocation.segments,
+              inset: true,
+              label: t(".table_label"),
+              row_class: ->(slice) { "cursor-pointer" if slice.link_params },
+              row_opts: ->(slice) { allocation_row_attributes(slice) }
+            ) do |table| %>
+          <% table.with_column(t(".columns.bucket"), row_header: true, class: "w-full max-w-0") do |slice| %>
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="inline-block size-2.5 shrink-0 rounded-full" style="background-color: <%= slice.color %>" aria-hidden="true"></span>
+              <% if slice.link_params %>
+                <%= link_to slice.name,
+                      portfolio_allocation_path(**slice.link_params),
+                      class: "truncate font-medium text-primary hover:underline focus-ring rounded-sm",
+                      data: { clickable_row_target: "link" } %>
+              <% else %>
+                <span class="truncate font-medium text-primary"><%= slice.name %></span>
+              <% end %>
+            </div>
+          <% end %>
+          <% table.with_column(t(".columns.amount"), numeric: true, class: "privacy-sensitive") do |slice| %>
+            <%= format_money(slice.amount) %>
+          <% end %>
+          <% table.with_column(t(".columns.weight"), numeric: true) do |slice| %>
+            <%= number_to_percentage(slice.weight, precision: 2) %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
